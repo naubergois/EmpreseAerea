@@ -1,0 +1,53 @@
+.flight-card {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.flight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,102,204,0.15);
+}
+
+.flight-card__airline { display: flex; flex-direction: column; gap: 0.25rem; }
+.flight-card__name { font-weight: 600; }
+.flight-card__number { color: #6b7280; font-size: 0.875rem; }
+
+.flight-card__times {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.flight-card__times > div { display: flex; flex-direction: column; gap: 0.25rem; }
+.flight-card__duration { flex: 1; padding: 0 1rem; }
+.flight-card__line {
+  height: 2px;
+  background: #e5e7eb;
+  margin: 0.5rem 0;
+  position: relative;
+}
+.flight-card__line::after {
+  content: '✈';
+  position: absolute;
+  right: 0;
+  top: -10px;
+  font-size: 0.75rem;
+}
+
+.flight-card__price { text-align: right; }
+.flight-card__price strong { display: block; font-size: 1.5rem; color: #0066cc; }
+.flight-card__baggage { font-size: 0.75rem; color: #00a86b; }
+
+@media (max-width: 768px) {
+  .flight-card { grid-template-columns: 1fr; }
+}

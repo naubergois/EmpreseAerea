@@ -1,0 +1,29 @@
+{
+  "rotas": [
+    {"origem": "GRU", "destino": "GIG", "distancia_km": 358, "duracao_base": 65},
+    {"origem": "GRU", "destino": "CGH", "distancia_km": 25, "duracao_base": 55},
+    {"origem": "GRU", "destino": "SDU", "distancia_km": 360, "duracao_base": 70},
+    {"origem": "GRU", "destino": "BSB", "distancia_km": 872, "duracao_base": 110},
+    {"origem": "GRU", "destino": "SSA", "distancia_km": 1450, "duracao_base": 150},
+    {"origem": "GRU", "destino": "REC", "distancia_km": 2150, "duracao_base": 190},
+    {"origem": "GRU", "destino": "FOR", "distancia_km": 2350, "duracao_base": 200},
+    {"origem": "GRU", "destino": "POA", "distancia_km": 1100, "duracao_base": 130},
+    {"origem": "GRU", "destino": "CWB", "distancia_km": 410, "duracao_base": 75},
+    {"origem": "GRU", "destino": "MIA", "distancia_km": 6550, "duracao_base": 540},
+    {"origem": "GRU", "destino": "LIS", "distancia_km": 7850, "duracao_base": 600},
+    {"origem": "GRU", "destino": "CDG", "distancia_km": 9400, "duracao_base": 660},
+    {"origem": "GRU", "destino": "SCL", "distancia_km": 2600, "duracao_base": 280},
+    {"origem": "CGH", "destino": "SDU", "distancia_km": 360, "duracao_base": 60},
+    {"origem": "BSB", "destino": "GIG", "distancia_km": 930, "duracao_base": 115}
+  ],
+  "voos_template": [
+    {"companhia": "LATAM", "numero_prefixo": "LA", "escalas": 0},
+    {"companhia": "GOL", "numero_prefixo": "G3", "escalas": 0},
+    {"companhia": "AZUL", "numero_prefixo": "AD", "escalas": 0},
+    {"companhia": "LATAM", "numero_prefixo": "LA", "escalas": 1},
+    {"companhia": "GOL", "numero_prefixo": "G3", "escalas": 1}
+  ],
+  "sem_voos": [
+    {"origem": "GRU", "destino": "TNR"}
+  ]
+}
