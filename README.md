@@ -83,16 +83,30 @@ EmpreseAerea/
 
 ---
 
-## Como executar os testes BDD
+## Testes
+
+> Guia completo: [docs/guia_implementacao.md — Seção 11](docs/guia_implementacao.md#11-testes--rodar-a-cada-nova-funcionalidade)
+
+**Regra:** rode todos os testes ao criar ou alterar funcionalidades, antes de cada commit.
 
 ```bash
-# Instalar dependências (exemplo com Cucumber JS)
-npm install @cucumber/cucumber
+# Suíte completa (recomendado)
+./scripts/test-all.sh
 
-# Executar todos os cenários
-npx cucumber-js features/
+# Backend — pytest
+cd backend && source venv/bin/activate && pytest tests/ -v
 
-# Executar por agente
-npx cucumber-js features/orquestrador/
-npx cucumber-js features/marketing/
+# BDD — behave
+cd features && behave busca_voos/ reserva/ orquestrador/ -v
+
+# Frontend — build
+cd frontend && npm run build
 ```
+
+| Tipo | Comando | Quando |
+|------|---------|--------|
+| Unitário + integração | `pytest tests/ -v` | A cada alteração no backend |
+| BDD por agente | `behave features/<agente>/` | Ao implementar requisito |
+| Build frontend | `npm run build` | Ao alterar React |
+| Docker Vite | `npm run test:docker` | Ao alterar Dockerfile/frontend |
+

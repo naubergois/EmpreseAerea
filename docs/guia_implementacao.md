@@ -1396,3 +1396,214 @@ npm run dev
 # Backend API: http://localhost:8000/docs (Swagger)
 # Health: http://localhost:8000/health
 ```
+
+---
+
+## 11. Testes — Rodar a Cada Nova Funcionalidade
+
+> **Regra de ouro:** toda funcionalidade nova deve vir acompanhada de testes.  
+> **Antes de commitar ou abrir PR:** execute a suíte completa e garanta que tudo passa.
+
+### 11.1 Fluxo de desenvolvimento com testes
+
+```
+1. Ler requisito (docs/requisitos/) + cenários BDD (features/)
+2. Escrever ou atualizar teste que descreve o comportamento esperado
+3. Implementar a funcionalidade (mínimo necessário)
+4. Rodar TODOS os testes (não só o arquivo novo)
+5. Refatorar se necessário
+6. Commit apenas com suíte verde
+```
+
+| Momento | O que rodar |
+|---------|-------------|
+| Durante a implementação | Testes do agente/módulo que você está alterando |
+| Ao terminar uma funcionalidade | Suíte completa (`./scripts/test-all.sh`) |
+| Antes de commit / PR | Suíte completa + build do frontend |
+| Após mudança em contrato de API | Testes de integração + cenários BDD do agente |
+
+### 11.2 Estrutura de testes no projeto
+
+```
+EmpreseAerea/
+├── backend/tests/
+│   ├── conftest.py                    # Fixtures compartilhadas (client, DB)
+│   ├── test_<agente>_*.py             # Testes unitários por agente
+│   └── integration/
+│       └── test_pipeline_completo.py  # Fluxos end-to-end via API
+├── features/
+│   ├── <agente>/*.feature             # Cenários BDD (Gherkin PT)
+│   ├── steps/                         # Step definitions (behave)
+│   └── environment.py                 # Setup do ambiente BDD
+└── frontend/
+    └── scripts/test-docker-vite.sh    # Teste de build/proxy Docker
+```
+
+### 11.3 O que testar por camada
+
+| Camada | Tipo | Onde | Exemplo |
+|--------|------|------|---------|
+| **Validator** | Unitário | `tests/test_reserva_service.py` | CPF inválido → `documento_invalido` |
+| **Service** | Unitário | `tests/test_<agente>_*.py` | Cálculo de milhas, precificação |
+| **Controller** | Integração | `tests/test_*_integracao.py` | `GET /api/voos/buscar` retorna 200 |
+| **Pipeline** | Integração | `tests/integration/` | Happy path ORC → EMI |
+| **Regra de negócio** | BDD | `features/<agente>/` | Cenário Gherkin do requisito |
+| **Frontend** | Build | `npm run build` | Compilação sem erros |
+| **Docker** | Smoke | `npm run test:docker` | Vite sobe sem erro de chunks |
+
+### 11.4 Comandos — Backend (pytest)
+
+```bash
+cd backend
+source venv/bin/activate   # Python 3.12 recomendado
+
+# Suíte completa
+pytest tests/ -v
+
+# Com cobertura (opcional)
+pytest tests/ -v --tb=short
+
+# Apenas um agente
+pytest tests/test_busca_service.py tests/test_busca_sintetico.py tests/test_busca_integracao.py -v
+
+# Apenas integração
+pytest tests/integration/ -v
+
+# Um teste específico
+pytest tests/test_atendimento_llm.py::test_chat_com_llm -v
+
+# Parar no primeiro erro (debug rápido)
+pytest tests/ -x -v
+```
+
+### 11.5 Comandos — BDD (behave)
+
+```bash
+cd features
+source ../backend/venv/bin/activate
+
+# Todos os cenários com steps implementados
+behave --no-capture
+
+# Por agente
+behave busca_voos/ -v
+behave reserva/ -v
+behave orquestrador/ -v
+behave atendimento/ -v
+
+# Um arquivo específico
+behave busca_voos/busca_basica.feature -v
+
+# Cenário único (por linha)
+behave busca_voos/busca_basica.feature:7 -v
+```
+
+### 11.6 Comandos — Frontend e Docker
+
+```bash
+# Build de produção (valida compilação)
+cd frontend && npm run build
+
+# Teste Docker do Vite (chunks + dev server)
+cd frontend && npm run test:docker
+```
+
+### 11.7 Suíte completa (recomendado)
+
+Na raiz do projeto:
+
+```bash
+./scripts/test-all.sh
+```
+
+Esse script executa em sequência:
+1. `pytest tests/` (backend)
+2. `behave` nos features com steps
+3. `npm run build` (frontend)
+
+### 11.8 Checklist ao criar nova funcionalidade
+
+Use este checklist **para cada** feature nova ou alteração de regra de negócio:
+
+```
+□ Li o requisito em docs/requisitos/XX_agente_*.md
+□ Identifiquei o(s) cenário(s) BDD em features/<agente>/
+□ Criei/atualizei teste pytest que cobre a regra principal
+□ Se nova rota HTTP: teste de integração com TestClient
+□ Se novo validador: função pura testada sem banco
+□ Se alterou pipeline: rode tests/integration/test_pipeline_completo.py
+□ Adicionei/atualizei step definition BDD se o cenário já existia
+□ Rodei ./scripts/test-all.sh — tudo verde
+□ Build do frontend passou (npm run build)
+```
+
+### 11.9 Template — novo teste de agente
+
+```python
+# backend/tests/test_<agente>_service.py
+"""Testes do agente <NOME>."""
+
+
+def test_cenario_feliz(client):
+  """RF-XX: descrição curta do requisito."""
+  resp = client.post("/api/<rota>", json={...})
+  assert resp.status_code == 200
+  assert resp.json()["campo"] == "valor_esperado"
+
+
+def test_cenario_erro(client):
+  """Deve retornar código de erro machine-readable."""
+  resp = client.post("/api/<rota>", json={...})
+  assert resp.status_code == 422
+  assert "codigo_erro" in str(resp.json()["detail"])
+```
+
+### 11.10 Template — nova step definition BDD
+
+```python
+# features/steps/<agente>_steps.py
+from behave import given, when, then
+
+
+@given('que o cliente ...')
+def step_setup(context):
+    context.world["chave"] = "valor"
+
+
+@when('o Agente de <NOME> processa a requisição')
+def step_acao(context):
+    resp = context.client.get("/api/...", params={...})
+    context.world["response"] = resp
+    context.world["result"] = resp.json()
+
+
+@then('deve retornar ...')
+def step_assert(context):
+    assert context.world["result"]["campo"] == "esperado"
+```
+
+### 11.11 Mapeamento requisito → teste
+
+| Agente | Requisitos | Features BDD | Testes pytest |
+|--------|-----------|--------------|---------------|
+| ORC | `01_agente_orquestrador.md` | `features/orquestrador/` | `integration/test_pipeline_completo.py` |
+| BUS | `02_agente_busca_voos.md` | `features/busca_voos/` | `test_busca_*.py` |
+| PRE | `03_agente_precificacao.md` | `features/precificacao/` | `test_precificacao_*.py` |
+| RES | `04_agente_reserva.md` | `features/reserva/` | `test_reserva_service.py` |
+| PAG | `05_agente_pagamento.md` | `features/pagamento/` | `test_pagamento_*.py` |
+| EMI | `06_agente_emissao.md` | `features/emissao/` | `test_emissao_*.py` |
+| MKT | `07_agente_marketing.md` | `features/marketing/` | `test_marketing_*.py` |
+| ATC | `08_agente_atendimento.md` | `features/atendimento/` | `test_atendimento_llm.py` |
+| NOT | `09_agente_notificacoes.md` | `features/notificacoes/` | `test_notificacao_*.py` |
+| FID | `10_agente_fidelidade.md` | `features/fidelidade/` | `test_fidelidade_*.py` |
+
+### 11.12 Boas práticas
+
+| Prática | Motivo |
+|---------|--------|
+| Mockar LLM e APIs externas nos testes | Evita dependência de rede e custo |
+| Usar SQLite em memória nos testes (`conftest.py`) | Rápido e isolado |
+| Um assert por comportamento relevante | Falhas mais fáceis de diagnosticar |
+| Nomear testes com o ID do requisito (`RF-XX`) | Rastreabilidade requisito ↔ teste |
+| Não commitar com testes falhando | Mantém `main` sempre deployável |
+| Expandir steps BDD gradualmente | 400+ cenários — priorize o agente em desenvolvimento |
