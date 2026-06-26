@@ -27,12 +27,27 @@ Respostas curtas (máximo 3 parágrafos)."""
 class LLMClient:
     def __init__(self):
         self.settings = get_settings()
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def enabled(self) -> bool:
         return bool(self.settings.llm_api_key)
 
-    def chat(self, mensagem: str, contexto: str = "") -> str:
+    def _get_client(self) -> httpx.AsyncClient:
+        """Client assíncrono reutilizado (mantém pool de conexões/TLS)."""
+        if self._client is None:
+            self._client = httpx.AsyncClient(
+                timeout=self.settings.llm_timeout_seconds,
+                limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
+            )
+        return self._client
+
+    async def aclose(self) -> None:
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None
+
+    async def chat(self, mensagem: str, contexto: str = "") -> str:
         if not self.enabled:
             raise RuntimeError("LLM_API_KEY não configurada")
 
@@ -55,10 +70,9 @@ class LLMClient:
             "Content-Type": "application/json",
         }
 
-        with httpx.Client(timeout=self.settings.llm_timeout_seconds) as client:
-            response = client.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+        response = await self._get_client().post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        data = response.json()
 
         return data["choices"][0]["message"]["content"].strip()
 

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db
-from shared.exceptions import NotFoundError, ValidationError
+from shared.exceptions import BusinessError, NotFoundError, ValidationError
 
 from .schemas import AssentoRequest, PassageiroResponse, ReservaRequest, ReservaResponse
 from .service import ReservaService
@@ -37,6 +37,8 @@ def criar_reserva(request: ReservaRequest, db: Session = Depends(get_db)):
         return ReservaService(db).criar_reserva(request)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
+    except BusinessError as e:
+        raise HTTPException(status_code=422, detail=f"{e.code}: {e}")
 
 
 @router.get("/{pnr}", response_model=ReservaResponse)

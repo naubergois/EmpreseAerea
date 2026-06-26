@@ -16,4 +16,9 @@ class SeatManager:
         self._bloqueios.pop(voo, None)
 
     def atribuir(self, voo: str, assento: str) -> bool:
+        """Atribui um assento a um voo. Retorna False se já estiver ocupado."""
+        atribuidos = self._bloqueios.setdefault(voo, {}).setdefault("atribuidos", set())
+        if assento in atribuidos:
+            return False
+        atribuidos.add(assento)
         return True

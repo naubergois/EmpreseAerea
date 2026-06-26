@@ -39,12 +39,17 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = "https://api.deepseek.com"
     llm_model: str = "deepseek-chat"
-    llm_timeout_seconds: int = 30
+    llm_timeout_seconds: int = 8
 
     # JWT
     jwt_secret_key: str = "skyagent-dev-secret-key"
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 60
+
+    # SonarQube (Agente de Qualidade)
+    sonar_host_url: str = "http://localhost:9000"
+    sonar_token: str = ""
+    sonar_project_key: str = "skyagent"
 
     class Config:
         env_file = ".env"

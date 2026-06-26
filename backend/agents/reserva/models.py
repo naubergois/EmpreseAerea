@@ -1,11 +1,11 @@
 """Models de reserva."""
 import enum
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class StatusReserva(enum.Enum):
@@ -29,7 +29,7 @@ class Reserva(Base):
     destino = Column(String(3), nullable=False)
     classe = Column(String(20), default="economica")
     valor_total = Column(Float, default=0)
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)
     expira_em = Column(DateTime, nullable=False)
 
     passageiros = relationship("Passageiro", back_populates="reserva")

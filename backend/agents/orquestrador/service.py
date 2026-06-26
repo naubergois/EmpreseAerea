@@ -1,12 +1,13 @@
 """Service do orquestrador."""
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
 from config import get_settings
 from event_bus import Events, event_bus
+from shared.datetime_utils import utc_now
 
 from agents.busca_voos.schemas import BuscaRequest
 from agents.busca_voos.service import BuscaService
@@ -41,7 +42,7 @@ class OrquestradorService:
     def iniciar_pipeline(self, req: PipelineStartRequest) -> PipelineStatusResponse:
         session_id = f"SES-{uuid.uuid4().hex[:8].upper()}"
         trace_id = f"TRC-{uuid.uuid4().hex[:12].upper()}"
-        expira = datetime.utcnow() + timedelta(minutes=self.settings.session_timeout_minutes)
+        expira = utc_now() + timedelta(minutes=self.settings.session_timeout_minutes)
 
         sessao = SessaoPipeline(
             id=session_id, trace_id=trace_id, status=PipelineStatus.EM_PROGRESSO,
@@ -132,7 +133,7 @@ class OrquestradorService:
 
         finally:
             sessao.estado_json = json.dumps(estado)
-            sessao.atualizado_em = datetime.utcnow()
+            sessao.atualizado_em = utc_now()
             self.db.commit()
 
         return PipelineStatusResponse(
@@ -175,7 +176,7 @@ class OrquestradorService:
 
     def health(self) -> dict:
         agentes = ["BUS", "PRE", "RES", "PAG", "EMI", "FID", "NOT", "MKT", "ATC", "ORC"]
-        return {"agentes": {a: "healthy" for a in agentes}}
+        return {"agentes": dict.fromkeys(agentes, "healthy")}
 
     def _registrar_etapa(self, sessao_id: str, etapa: str, agente: str, status: str) -> EtapaStatus:
         self.db.add(EtapaAuditoria(sessao_id=sessao_id, etapa=etapa, agente=agente, status=status))

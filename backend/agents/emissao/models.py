@@ -1,10 +1,10 @@
 """Models de emissão."""
 import enum
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class StatusBilhete(enum.Enum):
@@ -22,4 +22,4 @@ class Bilhete(Base):
     status = Column(Enum(StatusBilhete), default=StatusBilhete.EMITIDO)
     passageiro_nome = Column(String(200))
     itinerario_json = Column(Text)
-    emitido_em = Column(DateTime, default=datetime.utcnow)
+    emitido_em = Column(DateTime, default=utc_now)

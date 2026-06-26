@@ -1,9 +1,8 @@
 """Models de precificação."""
-from datetime import datetime
-
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class Cotacao(Base):
@@ -15,7 +14,7 @@ class Cotacao(Base):
     valor_total = Column(Float)
     breakdown_json = Column(Text)
     cupom = Column(String(50), nullable=True)
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)
     expira_em = Column(DateTime)
 
 

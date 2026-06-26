@@ -1,11 +1,12 @@
 """Service de precificação."""
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
 from event_bus import Events, event_bus
+from shared.datetime_utils import utc_now
 from shared.exceptions import BusinessError
 
 from .discount_engine import DESCONTOS_NIVEL, validar_cupom
@@ -45,7 +46,7 @@ class PrecificacaoService:
 
         valor_total = max(subtotal - desconto, 0)
         cotacao_id = f"QUOTE-{uuid.uuid4().hex[:8].upper()}"
-        expira = datetime.utcnow() + timedelta(minutes=self.TTL_MINUTES)
+        expira = utc_now() + timedelta(minutes=self.TTL_MINUTES)
 
         cotacao = Cotacao(
             id=cotacao_id,
@@ -83,7 +84,7 @@ class PrecificacaoService:
         cot = self.db.query(Cotacao).filter(Cotacao.id == cotacao_id).first()
         if not cot:
             return None
-        if cot.expira_em < datetime.utcnow():
+        if cot.expira_em < utc_now():
             raise BusinessError("Cotação expirada", "cotacao_expirada")
         breakdown = [BreakdownItem(**b) for b in json.loads(cot.breakdown_json)]
         return PrecoResponse(

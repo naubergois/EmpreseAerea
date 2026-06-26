@@ -56,6 +56,16 @@ def step_data_desejada(context, data):
     context.world.setdefault('busca', {})['data_ida'] = data
 
 
+@given('o passageiro necessita de cadeira de rodas')
+def step_cadeirante(context):
+    context.world.setdefault('busca', {})['cadeirante'] = True
+
+
+@given('a data é no período de Carnaval "{data}"')
+def step_data_carnaval(context, data):
+    context.world.setdefault('busca', {})['data_ida'] = data
+
+
 @given('a busca é flexível com margem de {n:d} dias')
 def step_flex(context, n):
     context.world.setdefault('busca', {})['flex_dias'] = n
@@ -64,16 +74,18 @@ def step_flex(context, n):
 @when('o Agente de Busca processa a requisição')
 def step_processar_busca(context):
     params = context.world.get('busca', {})
-    resp = context.client.get('/api/voos/buscar', params={
+    query = {
         'origem': params.get('origem', 'GRU'),
         'destino': params.get('destino', 'GIG'),
         'data_ida': f"{params.get('data_ida', '2026-08-15')}T00:00:00",
-        'data_volta': f"{params['data_volta']}T00:00:00" if params.get('data_volta') else None,
         'classe': params.get('classe', 'economica'),
         'adultos': params.get('adultos', 1),
         'flex_dias': params.get('flex_dias', 0),
         'cadeirante': params.get('cadeirante', False),
-    })
+    }
+    if params.get('data_volta'):
+        query['data_volta'] = f"{params['data_volta']}T00:00:00"
+    resp = context.client.get('/api/voos/buscar', params=query)
     context.world['response'] = resp
     context.world['result'] = resp.json() if resp.status_code == 200 else {}
 
@@ -165,7 +177,7 @@ def step_menor_preco(context):
 
 @then('"{cidade}" deve ser resolvido para aeroportos "{codes}"')
 def step_resolver_aeroporto(context, cidade, codes):
-    expected = [c.strip() for c in codes.split(' e ')]
+    expected = [c.strip().strip('"').strip() for c in codes.split(' e ')]
     if 'São Paulo' in cidade or 'sao paulo' in cidade.lower():
         actual = context.world.get('aeroportos_origem', [])
     else:

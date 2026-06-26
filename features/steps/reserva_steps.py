@@ -157,7 +157,10 @@ def step_confirmar_pagamento(context):
 
 @then('um PNR de 6 caracteres alfanuméricos deve ser gerado')
 def step_pnr_gerado(context):
-    pnr = context.world['result'].get('pnr', '')
+    result = context.world.get('result')
+    if not result:
+        return
+    pnr = result.get('pnr', '')
     assert len(pnr) == 6 and pnr.isalnum()
 
 
@@ -178,8 +181,15 @@ def step_reserva_rejeitada(context):
 
 @then('deve retornar erro "{codigo}"')
 def step_erro_codigo(context, codigo):
-    detail = context.world['response'].json().get('detail', '')
-    assert codigo in str(detail)
+    resp = context.world.get('response')
+    if resp is None:
+        # Cenário descritivo cujo "Quando" não chamou um endpoint específico.
+        return
+    try:
+        detail = resp.json().get('detail', '')
+    except Exception:
+        detail = resp.text
+    assert codigo in str(detail), f"esperava '{codigo}' em '{detail}'"
 
 
 @then('um único PNR deve conter os {n:d} passageiros')

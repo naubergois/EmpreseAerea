@@ -1,0 +1,20 @@
+.results-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.results-head__meta {
+  margin-top: 0.25rem;
+  font-size: var(--text-sm);
+}
+
+.results-skeletons {
+  display: grid;
+  gap: 1rem;
+}
+.results-skeleton {
+  height: 116px;
+}

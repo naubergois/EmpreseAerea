@@ -1,10 +1,10 @@
 """Models de notificações."""
 import enum
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class StatusNotificacao(enum.Enum):
@@ -23,4 +23,4 @@ class Notificacao(Base):
     destinatario = Column(String(200))
     conteudo = Column(Text)
     status = Column(Enum(StatusNotificacao), default=StatusNotificacao.PENDENTE)
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)

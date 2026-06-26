@@ -1,9 +1,8 @@
 """Models de atendimento."""
-from datetime import datetime
-
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class Atendimento(Base):
@@ -17,4 +16,4 @@ class Atendimento(Base):
     sentimento = Column(String(20), default="neutro")
     status = Column(String(20), default="aberto")
     idioma = Column(String(5), default="pt")
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)

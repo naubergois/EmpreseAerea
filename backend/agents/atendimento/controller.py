@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/atendimento", tags=["Atendimento"])
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest, db: Session = Depends(get_db)):
-    return AtendimentoService(db).chat(request)
+async def chat(request: ChatRequest, db: Session = Depends(get_db)):
+    return await AtendimentoService(db).chat(request)
 
 
 @router.post("/escalar")

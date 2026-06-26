@@ -30,11 +30,12 @@ class BuscaService:
         if cached:
             voos_raw = cached
         else:
+            alta_demanda = self._e_alta_demanda(req.data_ida)
             voos_raw = []
             for o in origens:
                 for d in destinos:
                     voos_raw.extend(
-                        gerar_voos(o, d, req.data_ida, req.adultos, req.classe)
+                        gerar_voos(o, d, req.data_ida, req.adultos, req.classe, alta_demanda)
                     )
             if req.flex_dias > 0:
                 for delta in range(-req.flex_dias, req.flex_dias + 1):
@@ -44,7 +45,8 @@ class BuscaService:
                     for o in origens:
                         for d in destinos:
                             voos_raw.extend(
-                                gerar_voos(o, d, data, req.adultos, req.classe)
+                                gerar_voos(o, d, data, req.adultos, req.classe,
+                                           self._e_alta_demanda(data))
                             )
             self.repo.set_cache(chave, voos_raw)
 
@@ -78,6 +80,21 @@ class BuscaService:
             menor_preco=menor_preco,
             cache=cache_status,
         )
+
+    @staticmethod
+    def _e_alta_demanda(data: datetime) -> bool:
+        """Identifica períodos de alta demanda (Carnaval, férias, fim de ano)."""
+        mes, dia = data.month, data.day
+        # Carnaval / verão (fev), férias de julho, fim de ano e réveillon.
+        if mes == 2 and dia >= 10:
+            return True
+        if mes == 7:
+            return True
+        if mes == 12 and dia >= 15:
+            return True
+        if mes == 1 and dia <= 7:
+            return True
+        return False
 
     def _aplicar_filtros(self, voos: list, req: BuscaRequest) -> list:
         result = voos

@@ -1,8 +1,7 @@
 """Motor de descontos e cupons."""
-from datetime import datetime
-
 from sqlalchemy.orm import Session
 
+from shared.datetime_utils import utc_now
 from shared.exceptions import BusinessError
 
 from .models import Cupom
@@ -14,7 +13,7 @@ def validar_cupom(db: Session, codigo: str, valor: float, origem: str | None, de
     cupom = db.query(Cupom).filter(Cupom.codigo == codigo.upper()).first()
     if not cupom:
         raise BusinessError("Cupom não encontrado", "cupom_invalido")
-    if cupom.valido_ate and cupom.valido_ate < datetime.utcnow():
+    if cupom.valido_ate and cupom.valido_ate < utc_now():
         raise BusinessError("Cupom expirado", "cupom_expirado")
     if cupom.uso_atual >= cupom.uso_max:
         raise BusinessError("Cupom esgotado", "cupom_esgotado")

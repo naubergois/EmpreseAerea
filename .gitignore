@@ -27,3 +27,7 @@ dist/
 test_*.db
 test_bdd.db
 test_pytest.db
+.coverage
+coverage.xml
+pytest-report.xml
+.scannerwork/

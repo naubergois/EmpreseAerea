@@ -13,6 +13,8 @@ from agents.notificacoes.controller import router as notificacoes_router
 from agents.orquestrador.controller import router as orquestrador_router
 from agents.pagamento.controller import router as pagamento_router
 from agents.precificacao.controller import router as precificacao_router
+from agents.qa.controller import router as qa_router
+from agents.qualidade.controller import router as qualidade_router
 from agents.reserva.controller import router as reserva_router
 from config import get_settings
 from database import init_db
@@ -26,6 +28,9 @@ async def lifespan(app: FastAPI):
     init_db()
     seed_data()
     yield
+    from agents.atendimento.llm_client import llm_client
+
+    await llm_client.aclose()
 
 
 app = FastAPI(
@@ -62,6 +67,8 @@ app.include_router(marketing_router)
 app.include_router(atendimento_router)
 app.include_router(notificacoes_router)
 app.include_router(fidelidade_router)
+app.include_router(qa_router)
+app.include_router(qualidade_router)
 
 
 @app.get("/health")

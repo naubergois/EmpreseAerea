@@ -1,6 +1,6 @@
 """Service de pagamento."""
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import qrcode
 import io
@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from config import get_settings
 from event_bus import Events, event_bus
+from shared.datetime_utils import utc_now
 from shared.exceptions import BusinessError
 
 from .fraud_detector import avaliar_fraude
@@ -22,6 +23,8 @@ from .schemas import (
     PagamentoSplitRequest,
     ReembolsoRequest,
 )
+
+_TRANSACAO_NAO_ENCONTRADA = "Transação não encontrada"
 
 
 class PagamentoService:
@@ -48,7 +51,7 @@ class PagamentoService:
 
     def gerar_pix(self, req: PagamentoPixRequest) -> PagamentoResponse:
         txn_id = f"PIX-{uuid.uuid4().hex[:10].upper()}"
-        expira = datetime.utcnow() + timedelta(minutes=self.settings.pix_expiry_minutes)
+        expira = utc_now() + timedelta(minutes=self.settings.pix_expiry_minutes)
         copia_cola = f"00020126580014br.gov.bcb.pix0136{txn_id}52040000530398654{req.valor:.2f}"
         qr = qrcode.make(copia_cola)
         buf = io.BytesIO()
@@ -70,7 +73,7 @@ class PagamentoService:
     def webhook_pix(self, txn_id: str, valor: float) -> PagamentoResponse:
         txn = self.db.query(Transacao).filter(Transacao.id == txn_id).first()
         if not txn:
-            raise BusinessError("Transação não encontrada", "transacao_nao_encontrada")
+            raise BusinessError(_TRANSACAO_NAO_ENCONTRADA, "transacao_nao_encontrada")
         if abs(txn.valor - valor) > 0.01:
             raise BusinessError("Valor incorreto", "valor_incorreto")
         txn.status = StatusPagamento.APROVADO
@@ -80,7 +83,7 @@ class PagamentoService:
 
     def gerar_boleto(self, req: PagamentoBoletoRequest) -> PagamentoResponse:
         txn_id = f"BOL-{uuid.uuid4().hex[:10].upper()}"
-        expira = datetime.utcnow() + timedelta(days=3)
+        expira = utc_now() + timedelta(days=3)
         codigo = f"23793.38128 60000.000003 00000.000{txn_id[-4:]}"
         txn = Transacao(
             id=txn_id, pnr=req.pnr, metodo=MetodoPagamento.BOLETO,
@@ -97,7 +100,7 @@ class PagamentoService:
     def status(self, txn_id: str) -> PagamentoResponse:
         txn = self.db.query(Transacao).filter(Transacao.id == txn_id).first()
         if not txn:
-            raise BusinessError("Transação não encontrada", "transacao_nao_encontrada")
+            raise BusinessError(_TRANSACAO_NAO_ENCONTRADA, "transacao_nao_encontrada")
         return PagamentoResponse(
             id=txn.id, pnr=txn.pnr, status=txn.status.value,
             metodo=txn.metodo.value, valor=txn.valor,
@@ -106,7 +109,7 @@ class PagamentoService:
     def reembolsar(self, txn_id: str, req: ReembolsoRequest) -> dict:
         txn = self.db.query(Transacao).filter(Transacao.id == txn_id).first()
         if not txn:
-            raise BusinessError("Transação não encontrada", "transacao_nao_encontrada")
+            raise BusinessError(_TRANSACAO_NAO_ENCONTRADA, "transacao_nao_encontrada")
         if txn.status == StatusPagamento.REEMBOLSADO:
             return {"id": txn_id, "status": "reembolsado", "idempotente": True}
         txn.status = StatusPagamento.REEMBOLSADO

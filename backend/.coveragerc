@@ -1,0 +1,5 @@
+[run]
+# Gera caminhos relativos no relatório para que o SonarScanner (que roda em
+# container, com o projeto montado em /usr/src) consiga resolver os arquivos.
+relative_files = True
+source = .

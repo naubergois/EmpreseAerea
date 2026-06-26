@@ -1,9 +1,11 @@
 """Teste de integração da busca com dados sintéticos pré-carregados."""
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from shared.datetime_utils import utc_now
 
 
 def test_busca_com_cache_sintetico(client):
-    data = (datetime.utcnow() + timedelta(days=7)).strftime("%Y-%m-%d")
+    data = (utc_now() + timedelta(days=7)).strftime("%Y-%m-%d")
     resp = client.get("/api/voos/buscar", params={
         "origem": "GRU", "destino": "GIG", "data_ida": data,
     })

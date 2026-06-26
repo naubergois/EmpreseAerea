@@ -1,11 +1,12 @@
 """Service de reserva."""
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session
 
 from config import get_settings
 from event_bus import Events, event_bus
+from shared.datetime_utils import utc_now
 from shared.exceptions import BusinessError, NotFoundError, ValidationError
 
 from . import validators
@@ -30,7 +31,7 @@ class ReservaService:
         self._validar_passageiros(request)
 
         pnr = self.pnr_gen.gerar()
-        expira_em = datetime.utcnow() + timedelta(minutes=self.settings.booking_hold_minutes)
+        expira_em = utc_now() + timedelta(minutes=self.settings.booking_hold_minutes)
 
         reserva = Reserva(
             pnr=pnr,
@@ -118,7 +119,7 @@ class ReservaService:
                 )
                 if not valido:
                     raise ValidationError(msg)
-            idade = relativedelta(datetime.utcnow(), p.data_nascimento).years
+            idade = relativedelta(utc_now(), p.data_nascimento).years
             valido, msg = validators.validar_menor_acompanhado(idade, tem_adulto)
             if not valido:
                 raise ValidationError(msg)

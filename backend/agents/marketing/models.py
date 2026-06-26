@@ -1,9 +1,8 @@
 """Models de marketing."""
-from datetime import datetime
-
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class Campanha(Base):
@@ -14,7 +13,7 @@ class Campanha(Base):
     tipo = Column(String(50))
     segmento = Column(String(100))
     status = Column(String(20), default="ativa")
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)
 
 
 class Segmento(Base):

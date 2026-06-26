@@ -1,7 +1,7 @@
 """Repository de reserva."""
-from datetime import datetime
-
 from sqlalchemy.orm import Session
+
+from shared.datetime_utils import utc_now
 
 from .models import Passageiro, Reserva, StatusReserva
 
@@ -37,6 +37,6 @@ class ReservaRepository:
         return (
             self.db.query(Reserva)
             .filter(Reserva.status == StatusReserva.PENDENTE)
-            .filter(Reserva.expira_em < datetime.utcnow())
+            .filter(Reserva.expira_em < utc_now())
             .all()
         )

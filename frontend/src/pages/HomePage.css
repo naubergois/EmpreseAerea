@@ -1,0 +1,28 @@
+.hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.hero__title {
+  font-size: var(--text-2xl);
+  margin-bottom: 0.5rem;
+}
+.hero__subtitle {
+  color: var(--color-muted);
+}
+
+.search-form {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.search-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .search-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

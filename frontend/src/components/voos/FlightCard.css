@@ -45,8 +45,8 @@
 }
 
 .flight-card__price { text-align: right; }
-.flight-card__price strong { display: block; font-size: 1.5rem; color: #0066cc; }
-.flight-card__baggage { font-size: 0.75rem; color: #00a86b; }
+.flight-card__price strong { display: block; font-size: 1.5rem; color: var(--color-primary); }
+.flight-card__baggage { font-size: 0.8rem; font-weight: 600; color: var(--color-accent); }
 
 @media (max-width: 768px) {
   .flight-card { grid-template-columns: 1fr; }

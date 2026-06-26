@@ -1,10 +1,10 @@
 """Models do orquestrador."""
 import enum
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class PipelineStatus(enum.Enum):
@@ -24,8 +24,8 @@ class SessaoPipeline(Base):
     intencao = Column(String(50), default="compra")
     estado_json = Column(Text, default="{}")
     nivel_fidelidade = Column(String(20), nullable=True)
-    criado_em = Column(DateTime, default=datetime.utcnow)
-    atualizado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)
+    atualizado_em = Column(DateTime, default=utc_now)
     expira_em = Column(DateTime)
 
 
@@ -37,4 +37,4 @@ class EtapaAuditoria(Base):
     etapa = Column(String(50))
     agente = Column(String(10))
     status = Column(String(20))
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)

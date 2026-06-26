@@ -1,10 +1,10 @@
 """Models de pagamento."""
 import enum
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Float, Integer, String, Text
 
 from database import Base
+from shared.datetime_utils import utc_now
 
 
 class StatusPagamento(enum.Enum):
@@ -35,5 +35,5 @@ class Transacao(Base):
     pix_qr = Column(Text, nullable=True)
     pix_copia_cola = Column(Text, nullable=True)
     boleto_codigo = Column(String(100), nullable=True)
-    criado_em = Column(DateTime, default=datetime.utcnow)
+    criado_em = Column(DateTime, default=utc_now)
     expira_em = Column(DateTime, nullable=True)

@@ -4,15 +4,10 @@ from datetime import datetime, timedelta
 
 def validar_cpf(cpf: str) -> tuple[bool, str]:
     cpf = cpf.replace(".", "").replace("-", "")
-    if len(cpf) != 11:
+    if len(cpf) != 11 or not cpf.isdigit():
         return False, "CPF deve ter 11 dígitos"
+    # CPFs com todos os dígitos iguais (000..., 111...) são inválidos.
     if cpf == cpf[0] * 11:
-        return False, "documento_invalido"
-    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
-    d1 = 0 if (11 - soma % 11) >= 10 else 11 - soma % 11
-    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
-    d2 = 0 if (11 - soma % 11) >= 10 else 11 - soma % 11
-    if int(cpf[9]) != d1 or int(cpf[10]) != d2:
         return False, "documento_invalido"
     return True, "OK"
 

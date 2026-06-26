@@ -2,8 +2,22 @@ import { formatCurrency, formatTime, formatDuration } from '../../utils/formatte
 import './FlightCard.css';
 
 export default function FlightCard({ flight, onSelect }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect?.(flight);
+    }
+  };
+
   return (
-    <div className="flight-card" onClick={() => onSelect?.(flight)}>
+    <div
+      className="flight-card"
+      role="button"
+      tabIndex={0}
+      aria-label={`Selecionar voo ${flight.numero} de ${flight.origem} para ${flight.destino} por ${formatCurrency(flight.preco)}`}
+      onClick={() => onSelect?.(flight)}
+      onKeyDown={handleKeyDown}
+    >
       <div className="flight-card__airline">
         <span className="flight-card__name">{flight.companhia?.nome}</span>
         <span className="flight-card__number">{flight.numero}</span>

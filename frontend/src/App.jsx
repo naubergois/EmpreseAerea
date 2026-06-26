@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { BookingProvider } from './context/BookingContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import Stepper from './components/layout/Stepper';
 import HomePage from './pages/HomePage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import BookingPage from './pages/BookingPage';
@@ -9,6 +10,7 @@ import PaymentPage from './pages/PaymentPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import LoyaltyPage from './pages/LoyaltyPage';
 import SupportPage from './pages/SupportPage';
+import BddTestsPage from './pages/BddTestsPage';
 import './App.css';
 
 export default function App() {
@@ -16,8 +18,10 @@ export default function App() {
     <BookingProvider>
       <BrowserRouter>
         <div className="app">
+          <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
           <Header />
-          <main className="app__main">
+          <main className="app__main" id="conteudo" tabIndex={-1}>
+            <Stepper />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/resultados" element={<SearchResultsPage />} />
@@ -26,6 +30,7 @@ export default function App() {
               <Route path="/confirmacao" element={<ConfirmationPage />} />
               <Route path="/fidelidade" element={<LoyaltyPage />} />
               <Route path="/suporte" element={<SupportPage />} />
+              <Route path="/testes" element={<BddTestsPage />} />
             </Routes>
           </main>
           <Footer />

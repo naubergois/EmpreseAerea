@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { enviarChat } from '../api/atendimentoApi';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function SupportPage() {
+  useDocumentTitle('Suporte');
   const [mensagem, setMensagem] = useState('');
   const [pnr, setPnr] = useState('');
   const [historico, setHistorico] = useState([]);
@@ -46,7 +48,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="card" style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', minHeight: 480 }}>
+    <div className="card" style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', minHeight: 480 }}>
       <h2>Suporte SkyAgent</h2>
       <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem' }}>
         Assistente com IA — tire dúvidas sobre reservas, bagagem, cancelamento e milhas.
@@ -58,11 +60,16 @@ export default function SupportPage() {
         </p>
       )}
 
-      <div style={{
-        flex: 1, overflowY: 'auto', maxHeight: 320, marginBottom: '1rem',
-        border: '1px solid #e5e7eb', borderRadius: 8, padding: '0.75rem',
-        background: '#fafafa',
-      }}>
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Histórico da conversa"
+        style={{
+          flex: 1, overflowY: 'auto', maxHeight: 320, marginBottom: '1rem',
+          border: '1px solid var(--color-border)', borderRadius: 8, padding: '0.75rem',
+          background: '#fafafa',
+        }}
+      >
         {historico.length === 0 && (
           <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
             Exemplo: &quot;Qual a política de bagagem?&quot; ou &quot;Quero cancelar minha reserva&quot;
@@ -100,23 +107,27 @@ export default function SupportPage() {
       {erro && <div className="alert alert-error" style={{ marginBottom: '0.75rem' }}>{erro}</div>}
 
       <form onSubmit={handleSend}>
+        <label htmlFor="pnr" className="sr-only">PNR (opcional)</label>
         <input
+          id="pnr"
           placeholder="PNR (opcional, ex: ABC123)"
           value={pnr}
           onChange={(e) => setPnr(e.target.value.toUpperCase())}
           maxLength={6}
           style={{ marginBottom: '0.5rem' }}
         />
+        <label htmlFor="mensagem" className="sr-only">Mensagem</label>
         <textarea
+          id="mensagem"
           value={mensagem}
           onChange={(e) => setMensagem(e.target.value)}
           placeholder="Digite sua mensagem..."
           rows={3}
-          style={{ width: '100%', padding: '0.75rem', borderRadius: 8, border: '1px solid #e5e7eb', marginBottom: '0.75rem', resize: 'vertical' }}
+          style={{ marginBottom: '0.75rem', resize: 'vertical' }}
           disabled={loading}
         />
         <button type="submit" className="btn-primary" disabled={loading || !mensagem.trim()}>
-          {loading ? 'Enviando...' : 'Enviar'}
+          {loading ? <><span className="spinner" /> Enviando...</> : 'Enviar'}
         </button>
       </form>
     </div>

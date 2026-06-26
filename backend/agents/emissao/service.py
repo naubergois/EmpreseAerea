@@ -2,15 +2,18 @@
 import json
 import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
 from event_bus import Events, event_bus
+from shared.datetime_utils import utc_now
 from shared.exceptions import BusinessError, NotFoundError
 
 from .models import Bilhete, StatusBilhete
 from .schemas import BilheteResponse, BoardingPassResponse, EmitirRequest
+
+_BILHETE_NAO_ENCONTRADO = "Bilhete não encontrado"
 
 
 class EmissaoService:
@@ -51,7 +54,7 @@ class EmissaoService:
     def buscar(self, numero: str) -> BilheteResponse:
         b = self.db.query(Bilhete).filter(Bilhete.numero == numero).first()
         if not b:
-            raise NotFoundError("Bilhete não encontrado")
+            raise NotFoundError(_BILHETE_NAO_ENCONTRADO)
         return BilheteResponse(
             numero=b.numero, pnr=b.pnr, status=b.status.value,
             passageiro_nome=b.passageiro_nome, emitido_em=b.emitido_em,
@@ -60,15 +63,15 @@ class EmissaoService:
     def boarding_pass(self, numero: str) -> BoardingPassResponse:
         b = self.db.query(Bilhete).filter(Bilhete.numero == numero).first()
         if not b:
-            raise NotFoundError("Bilhete não encontrado")
+            raise NotFoundError(_BILHETE_NAO_ENCONTRADO)
         qr = f"M1{b.passageiro_nome[:20]}/{numero}/GRUGIG"
         return BoardingPassResponse(numero_bilhete=numero, qr_code=qr)
 
     def void(self, numero: str) -> dict:
         b = self.db.query(Bilhete).filter(Bilhete.numero == numero).first()
         if not b:
-            raise NotFoundError("Bilhete não encontrado")
-        if b.emitido_em < datetime.utcnow() - timedelta(hours=24):
+            raise NotFoundError(_BILHETE_NAO_ENCONTRADO)
+        if b.emitido_em < utc_now() - timedelta(hours=24):
             raise BusinessError("Prazo de void expirado", "prazo_void_expirado")
         b.status = StatusBilhete.VOID
         self.db.commit()
@@ -77,7 +80,7 @@ class EmissaoService:
     def reemitir(self, numero: str) -> BilheteResponse:
         b = self.db.query(Bilhete).filter(Bilhete.numero == numero).first()
         if not b:
-            raise NotFoundError("Bilhete não encontrado")
+            raise NotFoundError(_BILHETE_NAO_ENCONTRADO)
         novo = f"045-{random.randint(1000000000, 9999999999)}"
         novo_b = Bilhete(
             numero=novo, pnr=b.pnr, passageiro_nome=b.passageiro_nome,

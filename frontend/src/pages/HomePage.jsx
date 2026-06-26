@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../context/BookingContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { todayISO } from '../utils/formatters';
+import './HomePage.css';
 
 export default function HomePage() {
+  useDocumentTitle('Buscar voos');
   const navigate = useNavigate();
   const { setSearch } = useBooking();
   const [form, setForm] = useState({
     origem: 'GRU', destino: 'GIG', data_ida: '2026-08-15', classe: 'economica', adultos: 1,
   });
+
+  const update = (campo) => (e) => setForm({ ...form, [campo]: e.target.value });
+  const updateIata = (campo) => (e) =>
+    setForm({ ...form, [campo]: e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,33 +26,75 @@ export default function HomePage() {
 
   return (
     <div>
-      <section style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Encontre seu próximo voo</h1>
-        <p style={{ color: '#6b7280' }}>Busca inteligente com precificação dinâmica e milhas</p>
+      <section className="hero">
+        <h1 className="hero__title">Encontre seu próximo voo</h1>
+        <p className="hero__subtitle">Busca inteligente com precificação dinâmica e milhas</p>
       </section>
-      <form className="card" onSubmit={handleSubmit} style={{ maxWidth: 800, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <label>Origem</label>
-            <input value={form.origem} onChange={(e) => setForm({ ...form, origem: e.target.value })} placeholder="GRU" />
+
+      <form className="card search-form" onSubmit={handleSubmit}>
+        <div className="search-form__grid">
+          <div className="field">
+            <label htmlFor="origem">Origem</label>
+            <input
+              id="origem"
+              name="origem"
+              value={form.origem}
+              onChange={updateIata('origem')}
+              placeholder="GRU"
+              autoComplete="off"
+              maxLength={3}
+              aria-describedby="origem-hint"
+              required
+            />
+            <span id="origem-hint" className="field__hint">Código IATA (3 letras)</span>
           </div>
-          <div>
-            <label>Destino</label>
-            <input value={form.destino} onChange={(e) => setForm({ ...form, destino: e.target.value })} placeholder="GIG" />
+
+          <div className="field">
+            <label htmlFor="destino">Destino</label>
+            <input
+              id="destino"
+              name="destino"
+              value={form.destino}
+              onChange={updateIata('destino')}
+              placeholder="GIG"
+              autoComplete="off"
+              maxLength={3}
+              required
+            />
           </div>
-          <div>
-            <label>Data ida</label>
-            <input type="date" value={form.data_ida} onChange={(e) => setForm({ ...form, data_ida: e.target.value })} />
+
+          <div className="field">
+            <label htmlFor="data_ida">Data de ida</label>
+            <input
+              id="data_ida"
+              name="data_ida"
+              type="date"
+              min={todayISO()}
+              value={form.data_ida}
+              onChange={update('data_ida')}
+              required
+            />
           </div>
-          <div>
-            <label>Classe</label>
-            <select value={form.classe} onChange={(e) => setForm({ ...form, classe: e.target.value })}>
+
+          <div className="field">
+            <label htmlFor="classe">Classe</label>
+            <select id="classe" name="classe" value={form.classe} onChange={update('classe')}>
               <option value="economica">Econômica</option>
               <option value="executiva">Executiva</option>
             </select>
           </div>
+
+          <div className="field">
+            <label htmlFor="adultos">Passageiros</label>
+            <select id="adultos" name="adultos" value={form.adultos} onChange={update('adultos')}>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>{n} {n === 1 ? 'adulto' : 'adultos'}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <button type="submit" className="btn-primary" style={{ width: '100%' }}>Buscar Voos</button>
+
+        <button type="submit" className="btn-primary btn-block">Buscar voos</button>
       </form>
     </div>
   );

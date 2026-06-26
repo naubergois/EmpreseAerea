@@ -1,7 +1,8 @@
 """Seed de dados iniciais e cache sintético de voos."""
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from database import SessionLocal
+from shared.datetime_utils import utc_now
 from agents.busca_voos.gds_client import gerar_voos, rotas_populares
 from agents.busca_voos.repository import BuscaRepository
 from agents.precificacao.models import Cupom
@@ -21,7 +22,7 @@ def _seed_cupons(db) -> None:
         return
     cupons = [
         Cupom(codigo="VERAO20", tipo="percentual", valor=20, uso_max=100,
-              valido_ate=datetime.utcnow() + timedelta(days=90)),
+              valido_ate=utc_now() + timedelta(days=90)),
         Cupom(codigo="PROMO50", tipo="fixo", valor=50, uso_max=50, valor_minimo=300),
     ]
     for c in cupons:
@@ -32,7 +33,7 @@ def _seed_cupons(db) -> None:
 def _seed_cache_voos(db) -> None:
     """Pré-carrega voos sintéticos para rotas populares (próximos 30 dias)."""
     repo = BuscaRepository(db)
-    data_base = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    data_base = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
     for origem, destino in rotas_populares():
         for dias in range(0, 30, 7):
             data = data_base + timedelta(days=dias)

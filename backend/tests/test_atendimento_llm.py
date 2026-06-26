@@ -1,5 +1,5 @@
 """Testes do atendimento com LLM mockado."""
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -8,7 +8,7 @@ import pytest
 def mock_llm():
     with patch("agents.atendimento.service.llm_client") as mock:
         mock.enabled = True
-        mock.chat.return_value = "Sua bagagem inclusa é de 23kg na tarifa Light."
+        mock.chat = AsyncMock(return_value="Sua bagagem inclusa é de 23kg na tarifa Light.")
         yield mock
 
 
@@ -27,7 +27,7 @@ def test_chat_com_llm(client, mock_llm):
 def test_chat_fallback_faq_sem_llm(client):
     with patch("agents.atendimento.service.llm_client") as mock:
         mock.enabled = False
-        mock.chat.side_effect = RuntimeError("no key")
+        mock.chat = AsyncMock(side_effect=RuntimeError("no key"))
         resp = client.post("/api/atendimento/chat", json={
             "mensagem": "Qual a política de cancelamento?",
             "canal": "chat",

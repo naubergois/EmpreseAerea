@@ -34,6 +34,6 @@ class ExtratoItem(BaseModel):
 
 class NivelResponse(BaseModel):
     nivel: str
-    proximo_nivel: Optional[str]
+    proximo_nivel: Optional[str] = None
     progresso_pct: float
     beneficios: list[str]
